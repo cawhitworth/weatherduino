@@ -1,5 +1,3 @@
-import serial
-
 def closest_to(candidates, value):
     delta = abs(candidates[0] - value)
     retVal = candidates[0]
@@ -35,7 +33,12 @@ def get_bits(lines):
     bits = []
 
     for line in lines:
+        line = line.rstrip()
+
         if line.startswith("Tick"):
+            continue
+
+        if len(line) == 0:
             continue
 
         s = line.split()
@@ -66,6 +69,20 @@ def get_bits(lines):
             expect = LineLevel.HIGH
 
     return bits
+
+def diff_bits(bits1, bits2, group_by = 32):
+    while len(bits1) != 0:
+        b1 = [repr(x) for x in bits1[0:group_by-1]]
+        b2 = [repr(x) for x in bits2[0:group_by-1]]
+        d = [ "-" if bit1 == bit2 else "X" for (bit1,bit2) in zip(b1,b2) ]
+        print "".join(b1)
+        print "".join(b2)
+        print "".join(d)
+        print
+
+        bits1 = bits1[group_by:]
+        bits2 = bits2[group_by:]
+
 
 def group_bits(bits, group_by):
     index = 0
