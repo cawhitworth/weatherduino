@@ -27,17 +27,24 @@ int state = LOW;
 
 void printDuration(int d)
 {
+  Serial.print("\n");
   Serial.print(d);
   Serial.print("  ");
   Serial.print(durations[d]);
-  Serial.print("\n");
 }
 
 void loop()
 {
   delay(5000);
   Serial.print("\nTick");
-  for(int j = 0; j < i; j++)
-    printDuration(j);
+  if (i != 0)
+  {
+    Serial.print("\nSTART");
+
+    for(int j = 0; j < i; j++)
+      printDuration(j);
+      
+    Serial.print("\nEND");
+  }
   i = 0;
 }
