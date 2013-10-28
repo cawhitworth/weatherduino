@@ -1,0 +1,10 @@
+ss1 ss2 ss3
+
+OUT
+44% RH 24C
+Pressure 995.4
+Windspeed 0
+
+ss4
+
+Pressume 995.3
