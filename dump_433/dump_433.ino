@@ -4,8 +4,6 @@
 unsigned int i = 0;
 unsigned int durations[MAX_DURATIONS];
 
-const int buttonPin = 8;
-
 void setup()
 {
   Serial.begin(9600);
