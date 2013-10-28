@@ -4,6 +4,28 @@ I've got a simple wireless weather station that transmits on 433MHz. We're havin
 
 ## Notes ##
 
+**Monday evening**
+
+Now have a python script that monitors the serial port for the arduino's output and "decodes" the packets as best we know how at the moment.
+
+I'm really not convinced the decoding is "real" at the moment but I'm basically relying on watching the difference in the bits by eye - for constant conditions, the packets really vary very little, so verifying bit differences for small changes should be possible.
+
+**Monday afternoon**
+
+Written a python script to decode the dumps making the assumptions above - working on 500ms == 0, 1500ms == 1.
+
+Also assuming little-endian for the moment, but can change that later. Need to cross-correlate the dumps with actual data from the weather station next and see if I can reverse-engineer the format.
+
+The dumps appear to be either 159 or 63 transitions (corresponding to 80 or 32 bits) - wondering if it might be a key-frame/delta type deal.
+
+The longer pulses appear to have a common header: (sorry, the binary is backwards...)
+
+    LSB           MSB
+     0 0 0 0 0 0 0 0 | 0
+     1 0 1 0 1 1 0 1 | 181
+     0 0 1 1 1 1 0 1 | 188
+     1 0 0 0 0 0 0 1 | 129
+
 **Monday morning**
 
 Connected up the Arduino to the receiver (5V on the arduino to VCC, GND to GND, pin 2 [interrupt 0] to a data pin on the receiver).
@@ -24,24 +46,3 @@ The next step is to decode this and try and correspond it to the data I see on t
 
 ![](https://dl.dropboxusercontent.com/u/18971919/waveduino/base_unit_and_arduino.jpg)
 
-**Monday afternoon**
-
-Written a python script to decode the dumps making the assumptions above - working on 500ms == 0, 1500ms == 1.
-
-Also assuming little-endian for the moment, but can change that later. Need to cross-correlate the dumps with actual data from the weather station next and see if I can reverse-engineer the format.
-
-The dumps appear to be either 159 or 63 transitions (corresponding to 80 or 32 bits) - wondering if it might be a key-frame/delta type deal.
-
-The longer pulses appear to have a common header: (sorry, the binary is backwards...)
-
-    LSB           MSB
-     0 0 0 0 0 0 0 0 | 0
-     1 0 1 0 1 1 0 1 | 181
-     0 0 1 1 1 1 0 1 | 188
-     1 0 0 0 0 0 0 1 | 129
-
-**Monday evening**
-
-Now have a python script that monitors the serial port for the arduino's output and "decodes" the packets as best we know how at the moment.
-
-I'm really not convinced the decoding is "real" at the moment but I'm basically relying on watching the difference in the bits by eye - for constant conditions, the packets really vary very little, so verifying bit differences for small changes should be possible.
