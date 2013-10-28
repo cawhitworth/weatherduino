@@ -9,7 +9,6 @@ void setup()
   Serial.begin(9600);
   Serial.print("Hello!");
   attachInterrupt(0, handleInterrupt, CHANGE);
-  pinMode(buttonPin, INPUT);
 }
 
 void handleInterrupt()
