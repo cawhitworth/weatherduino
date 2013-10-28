@@ -41,12 +41,12 @@ def get_bits(lines):
         s = line.split()
 
         if len(s) != 2:
-            continue
+            raise "Invalid data"
 
         (tick, duration) = s
 
-        if int(duration) > 2000:
-            continue
+        if int(duration) > 2000 or int(duration) < 400:
+            raise "Invalid data"
 
         width = closest_to(pulse_widths, int(duration))
 
@@ -54,7 +54,7 @@ def get_bits(lines):
 
         if expect != LineLevel.NONE:
             if expect != level:
-                print "Out of sync"
+                raise "Out of sync"
 
         if level == LineLevel.HIGH:
             expect = LineLevel.LOW
