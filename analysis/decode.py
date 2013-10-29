@@ -48,7 +48,7 @@ def get_bits(lines):
 
         (tick, duration) = s
 
-        if int(duration) > 2000 or int(duration) < 400:
+        if int(duration) > 2000 or int(duration) < 300:
             if int(tick) == 0:
                 continue
             else:

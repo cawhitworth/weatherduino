@@ -10,7 +10,7 @@ def parse(lines):
     packet = None
     header = None
 
-    longMap = [ False ] * 80
+    longMap = [ False ] * 48
     shortMap = [ False ] * 32
 
     prevLong = None
@@ -30,8 +30,8 @@ def parse(lines):
                     raise "Not a valid dump"
 
                 if len(packet) == 80:
-                    compareBits(packet, prevLong, longMap)
-                    prevLong = packet[:]
+                    compareBits(packet[:48], prevLong, longMap)
+                    prevLong = packet[:48]
                     compareBits(packet[48:], prevShort, shortMap)
                     prevShort = packet[48:]
 
