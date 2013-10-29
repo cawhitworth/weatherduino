@@ -4,6 +4,46 @@ I've got a simple wireless weather station that transmits on 433MHz. We're havin
 
 ## Notes ##
 
+**Tuesday morning**
+
+Diffing between packets of data added, along with various readability improvements for the serial logger.
+
+We appear to see either 80-bit or 32-bit bursts of data from the transmitter, so the serial logger recognises these. Additionally, the 32-bit bursts appear to be identical to the last 32-bits of the 80-bit bursts.
+
+The serial logger now diffs the packets it receives - the first 48-bits of a long packet get compared to the first 48-bits of the previous long packet; short packets or the last 32-bits of a long packet get compared to the last short packet or last 32-bits of a long packet received.
+
+At the same time, a webcam is now pointed at the base station and captures an image every time the serial logger registers a snapshot:
+
+![](https://dl.dropboxusercontent.com/u/18971919/waveduino/2013-10-29-12-24-33.jpg)
+
+The serial logger also logs the time/date, so we can correlate the two:
+
+    LONG PACKET @ 2013-10-29-12-24-33
+    0 0 0 0 | 0 0 0 0 | 1 0 1 0 | 1 0 1 0
+    0 1 1 1 | 1 1 0 1 | 0 1 1 1 | 1 0 1 0
+    1 1 0 1 | 1 0 0 0 | 1 1 1 1 | 1 1 1 1
+    1 1 1 1 | 1 1 1 1 | 1 1 1 1 | 1 1 1 1
+    1 1 1 1 | 1 1 1 1 | 1 0 1 1 | 1 1 0 0
+    
+    0000 | 0000 | 1010 | 1010 | 0111 | 1101 | 0111 | 1010 |
+    0000 | 0000 | 1010 | 1010 | 0111 | 1101 | 0111 | 1001 |
+    ---- | ---- | ---- | ---- | ---- | ---- | ---- | --XX |
+    
+    1101 | 1000 | 1111 | 1111 |
+    1101 | 1000 | 1111 | 1111 |
+    ---- | ---- | ---- | ---- |
+    
+    
+    1111 | 1111 | 1111 | 1111 | 1111 | 1111 | 1011 | 1100 |
+    1111 | 1111 | 1111 | 1111 | 1111 | 1111 | 0100 | 0101 |
+    ---- | ---- | ---- | ---- | ---- | ---- | XXXX | X--X |
+
+However, correlation is proving tricky. Nearly everything results in a change of nibbles 7 and 8 of the short packet. Changes in windspeed result in changes in nibble 2 of the short packet.
+
+The changes in nibbles 7 and 8 would suggest some kind of checksum (they change whenever any value changes - humidity, temperature, windspeed - rain is so far untested) but no other value appears to change in the short packet, and the display definitely updates when these packets are received.
+
+Further work is evidently required to decode the transmission...
+
 **Monday evening**
 
 Now have a python script that monitors the serial port for the arduino's output and "decodes" the packets as best we know how at the moment.
