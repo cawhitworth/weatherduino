@@ -4,6 +4,38 @@ I've got a simple wireless weather station that transmits on 433MHz. We're havin
 
 ## Notes ##
 
+**Tuesday afternoon - Interlude**
+
+[David Dunn](http://twitter.com/dcdunn) from [Electric Imp](http://electricimp.com) dropped by Red Gate to give a quick demonstration of their Internet of Things platform and leave a couple of devkits behind - the intention is to get the arduino uploading data to the cloud using this if I can ever decode the data format.
+
+**Tuesday afternoon**
+
+Trying various types of data analysis. It's confusing. For example, a change of humidity from 41% to 42% (and no change in anything else) causes the final two nibbles to change thus:
+
+    1001 1110   Before
+    1101 1010   After
+    -X-- -X--   Changed bits
+    
+However, a change of temperature from 24.2C to 24.3C (and no change in anything else) causes the final two nibbles to change thus:
+
+    1001 1110   Before
+    1100 1001   After
+    -X-X -XXX   Changed bits
+
+Which is - bit 2 of each word changes when either the humidity or the temperature changes, but there are no changes in the data for humidity that aren't also in the changes for the temperature.
+
+I've now written a script which determines which bits in the data change over time. For steady wind/rain, the pattern appears to be:
+
+    Long diffs:
+    - - - -   - - - -   - - - -   - - - -
+    - - - -   - - - -   X X X X   X X X X
+    - - - -   X X X X   - - - -   - - - -
+    - - - -   - - - -   - - - -   - - - -
+    - - - -   - - - -   X X X X   X X X X
+    Short diffs:
+    - - - -   - - - -   - - - -   - - - -
+    - - - -   - - - -   X X X X   X X X X
+
 **Tuesday morning**
 
 Diffing between packets of data added, along with various readability improvements for the serial logger.
