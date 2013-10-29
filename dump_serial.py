@@ -1,7 +1,14 @@
 import serial
 import analysis.decode
+from datetime import datetime
+from VideoCapture import Device
 
 ser = serial.Serial("COM3", 9600)
+
+lastLong = None
+lastShort = None
+
+cam = Device()
 
 while True:
     message = ser.readline().rstrip()
@@ -13,9 +20,30 @@ while True:
                 packet.append(line)
             else:
                 break
+        now = datetime.strftime(datetime.now(), "%Y-%m-%d-%H-%M-%S")
         try:
             bits = analysis.decode.get_bits(packet)
-            print "PACKET"
-            analysis.decode.group_bits(bits)
+            display = analysis.decode.group_bits(bits)
         except:
-            print "INVALID PACKET"
+            print "INVALID PACKET @ %s" % now
+            continue
+
+        if len(bits) == 80:
+            print "LONG PACKET @ %s" % now
+            print display
+            if lastLong != None:
+                print analysis.decode.diff_bits(bits, lastLong)
+            lastLong = bits[:] 
+            cam.saveSnapshot("grabs\\%s.jpg" % now)
+        elif len(bits) == 32:
+            print "SHORT PACKET @ %s" % now
+            print display
+            if lastShort != None:
+                print analysis.decode.diff_bits(bits, lastShort)
+            lastShort = bits[:]
+            cam.saveSnapshot("grabs\\%s.jpg" % now)
+        else:
+            print "UNKNOWN PACKET @ %s [maybe corrupt]" % now
+            print display
+
+

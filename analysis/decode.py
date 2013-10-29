@@ -49,7 +49,10 @@ def get_bits(lines):
         (tick, duration) = s
 
         if int(duration) > 2000 or int(duration) < 400:
-            raise "Invalid data"
+            if int(tick) == 0:
+                continue
+            else:
+                raise "Invalid data"
 
         width = closest_to(pulse_widths, int(duration))
 
@@ -71,20 +74,37 @@ def get_bits(lines):
     return bits
 
 def diff_bits(bits1, bits2, group_by = 32):
+    retVal = ""
     while len(bits1) != 0:
         b1 = [repr(x) for x in bits1[0:group_by-1]]
         b2 = [repr(x) for x in bits2[0:group_by-1]]
         d = [ "-" if bit1 == bit2 else "X" for (bit1,bit2) in zip(b1,b2) ]
-        print "".join(b1)
-        print "".join(b2)
-        print "".join(d)
-        print
+        retVal += "".join(b1)
+        retVal += "\n";
+        retVal += "".join(b2)
+        retVal += "\n";
+        retVal += "".join(d)
+        retVal += "\n";
 
         bits1 = bits1[group_by:]
         bits2 = bits2[group_by:]
+    return retVal
 
+def group_bits(bits, group_by = 16, subgroup_by = 4):
+    retVal = ""
+    for bit in range(0, len(bits)):
+        retVal += str(bits[bit]) + " "
+        if bit % group_by == group_by-1:
+            retVal += "\n"
+        elif bit % subgroup_by == subgroup_by-1:
+            retVal += "| "
 
-def group_bits(bits, group_by):
+    if (len(bits)-1) % group_by != group_by-1:
+        retVal += "\n"
+
+    return retVal
+
+def group_bits_with_vals(bits, group_by = 8):
     index = 0
     val = 0
     for bit in range(0, len(bits)):

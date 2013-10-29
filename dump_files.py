@@ -8,5 +8,6 @@ wireless_dumps = [
     ]
 
 for dump in wireless_dumps:
-    print group_bits(get_bits_from_file(dump), 8)
+    print group_bits(get_bits_from_file(dump))
+    print
 
