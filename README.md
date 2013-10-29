@@ -4,6 +4,10 @@ I've got a simple wireless weather station that transmits on 433MHz. We're havin
 
 ## Notes ##
 
+**Tuesday end-of-day**
+
+A bit frustrated; I'm failing to see any clear pattern in the logs/captures I've got. Probably best put it to bed for now and try again tomorrow.
+
 **Tuesday afternoon - Interlude**
 
 [David Dunn](http://twitter.com/dcdunn) from [Electric Imp](http://electricimp.com) dropped by Red Gate to give a quick demonstration of their Internet of Things platform and leave a couple of devkits behind - the intention is to get the arduino uploading data to the cloud using this if I can ever decode the data format.
