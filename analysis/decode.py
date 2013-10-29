@@ -73,17 +73,34 @@ def get_bits(lines):
 
     return bits
 
-def diff_bits(bits1, bits2, group_by = 32):
+def diff_bits(bits1, bits2, group_by = 32, subgroup_by=4):
     retVal = ""
     while len(bits1) != 0:
-        b1 = [repr(x) for x in bits1[0:group_by-1]]
-        b2 = [repr(x) for x in bits2[0:group_by-1]]
-        d = [ "-" if bit1 == bit2 else "X" for (bit1,bit2) in zip(b1,b2) ]
+        b1 = []
+        b2 = []
+        for i in range(0, min(len(bits1), group_by)):
+            b1.append( repr(bits1[i] ))
+            b2.append( repr(bits2[i] ))
+            if i % subgroup_by == subgroup_by - 1:
+                b1.append(" | ")
+                b2.append(" | ")
+
+        d = []
+        for (bit1, bit2) in zip(b1, b2):
+            if bit1 == bit2:
+                if bit1 == " | ":
+                    d.append(" | ")
+                else:
+                    d.append("-")
+            else:
+                d.append("X")
+
         retVal += "".join(b1)
         retVal += "\n";
         retVal += "".join(b2)
         retVal += "\n";
         retVal += "".join(d)
+        retVal += "\n";
         retVal += "\n";
 
         bits1 = bits1[group_by:]
