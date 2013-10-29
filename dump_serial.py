@@ -32,9 +32,13 @@ while True:
             print "LONG PACKET @ %s" % now
             print display
             if lastLong != None:
-                print analysis.decode.diff_bits(bits, lastLong)
-            lastLong = bits[:] 
+                print analysis.decode.diff_bits(bits[:48], lastLong[:48])
+                print analysis.decode.diff_bits(bits[48:], lastShort)
+
+            lastLong = bits[:]
+            lastShort = bits[48:]
             cam.saveSnapshot("grabs\\%s.jpg" % now)
+
         elif len(bits) == 32:
             print "SHORT PACKET @ %s" % now
             print display
