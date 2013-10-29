@@ -1,14 +1,19 @@
+import sys
 import serial
 import analysis.decode
 from datetime import datetime
-from VideoCapture import Device
 
 ser = serial.Serial("COM3", 9600)
 
+cam = None
+if len(sys.argv) == 2:
+    if sys.argv[1] == "-c":
+        from VideoCapture import Device
+        cam = Device()
+        print "Capturing webcam grabs"
+
 lastLong = None
 lastShort = None
-
-cam = Device()
 
 while True:
     message = ser.readline().rstrip()
@@ -37,7 +42,8 @@ while True:
 
             lastLong = bits[:]
             lastShort = bits[48:]
-            cam.saveSnapshot("grabs\\%s.jpg" % now)
+            if cam != None:
+                cam.saveSnapshot("grabs\\%s.jpg" % now)
 
         elif len(bits) == 32:
             print "SHORT PACKET @ %s" % now
@@ -45,7 +51,8 @@ while True:
             if lastShort != None:
                 print analysis.decode.diff_bits(bits, lastShort)
             lastShort = bits[:]
-            cam.saveSnapshot("grabs\\%s.jpg" % now)
+            if cam != None:
+                cam.saveSnapshot("grabs\\%s.jpg" % now)
         else:
             print "UNKNOWN PACKET @ %s [maybe corrupt]" % now
             print display
