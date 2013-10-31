@@ -10,6 +10,32 @@ an off-the-shelf 433MHz receiver and an Arduino.
 
 ## Notes ##
 
+**Thursday mid-afternoon**
+
+So, it turns out a trivial voltage divider is enough to get the Arduino
+talking to the Imp - the Arduino is happy enough with the 3.3V level the
+Imp puts out in the other direction also.
+
+This means I've now got the world's most convoluted serial console hooked up
+to my Arduino - using the software serial connected via the voltage divider
+to pins 5 and 7 on the Imp (which are hardwired to the Imp's UART) and a
+simple serial monitor running on the Imp, I can see the output from my
+weather station Arduino sketch on the Imp debug console:
+
+![](https://dl.dropboxusercontent.com/u/18971919/waveduino/impDemo1.png)
+
+Which is pretty neat. Next, decode that data and make it available via a web
+service.
+
+(annoyingly, I can't seem to get things to work unless the Arduino has both a
+USB *and* 9V battery attached, and the Imp doesn't want to run off a USB power
+supply either, so currently it's taking 2 USB ports and a 9V battery to make
+it work, and it currently looks like this:
+
+![](https://dl.dropboxusercontent.com/u/18971919/waveduino/IMG_20131031_143723.jpg)
+
+Which is a bit of a mess, but hey ho)
+
 **Thursday lunchtime**
 
 OK, so my intention was to use the Electric Imp that Dave dropped off on

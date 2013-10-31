@@ -1,0 +1,27 @@
+
+function pollUart()
+{
+    imp.wakeup(0.1, pollUart.bindenv(this));
+
+    local s = "";
+    local byte = hardware.uart57.read();    // read the UART buffer
+    // This will return -1 if there is no data to be read.
+    while (byte != -1)
+    {
+        s += byte.tochar();
+        byte = hardware.uart57.read(); 
+    }
+
+    if (s.len() > 0)
+    {
+        server.log(s);
+    }
+}
+
+imp.configure("SerialListener", [], []);
+
+hardware.configure(UART_57);    // Using UART on pins 5 and 7
+hardware.uart57.configure(9600, 8, PARITY_NONE, 1, NO_CTSRTS); // 19200 baud worked well, no parity, 1 stop bit, 8 data bits
+
+pollUart();
+
