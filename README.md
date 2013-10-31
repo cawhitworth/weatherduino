@@ -10,6 +10,28 @@ an off-the-shelf 433MHz receiver and an Arduino.
 
 ## Notes ##
 
+**Thursday afternoon a bit later still...**
+
+It seems if I continually poll the Imp UART (using imp.onidle rather than
+imp.wakeup) the noise virtually goes away. This is far from ideal in a low-
+power device, but it will do for now.
+
+(I wonder if this is because I am using quite an old Imp dev board?)
+
+Anyway, I have temperature and humidity data in the cloud, which is nice.
+
+**Thursday late afternoon**
+
+The perennial problem of noise has arisen again - it turns out that connecting
+the USB-powered Imp does actually generate a substantial amount of noise in
+the 433MHz circuit, meaning that getting clean, useful data from the receiver
+becomes very difficult as soon as it is connected. A clean packet does get
+through very occasionally, and when it does, the data wends its way through
+the cloudyweb and I have a nice little Imp application that allows you to
+retrieve the current temperature and humidity from an HTTP request. Sadly,
+it only seems to get a useful packet about once every half hour, and the
+rest of the time there's just too much noise.
+
 **Thursday mid-afternoon**
 
 So, it turns out a trivial voltage divider is enough to get the Arduino
