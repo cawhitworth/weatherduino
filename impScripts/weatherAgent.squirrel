@@ -1,0 +1,35 @@
+
+server.log("Url: " + http.agenturl());
+
+temperature <- 0.0;
+humidity <- 0;
+
+function requestHandler(request, response) {
+  try {
+    if ("temp" in request.query) {
+        response.send(200, format("%2.1f", temperature));
+    }
+    if ("humi" in request.query) {
+        response.send(200, format("%d", humidity));
+    }
+  } catch (ex) {
+    response.send(500, "Internal Server Error: " + ex);
+  }
+}
+ 
+// register the HTTP handler
+http.onrequest(requestHandler);
+
+device.on("TICK", function(o) {
+});
+
+device.on("TEMP", function(t) {
+    temperature = t;
+    server.log("Temperature from device: " + t);
+});
+
+device.on("HUMI", function(h) {
+    humidity = h;
+    server.log("Humidity from device: " + h);
+});
+

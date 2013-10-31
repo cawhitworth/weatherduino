@@ -1,0 +1,58 @@
+
+local readData = "";
+
+
+function takeChar(c)
+{
+    readData += c.tochar();
+    
+    if (c == 10)
+    {
+        local cmd = readData.slice(0, 4)
+        
+        if(cmd == "TICK")
+        {
+            agent.send("TICK", null);
+        }
+        
+        if(cmd == "TMP:")
+        {
+            server.log(readData);
+            local temperature = (readData.slice(4).tofloat())/10.0;
+            agent.send("TEMP", temperature)
+        }
+
+        if(cmd == "HUM:")
+        {
+            server.log(readData);
+            local humidity = readData.slice(4).tointeger();
+            agent.send("HUMI", humidity)
+
+        }
+
+        readData = "";
+    }
+}
+
+function pollUart()
+{
+    local byte = hardware.uart57.read();    // read the UART buffer
+    // This will return -1 if there is no data to be read.
+    while (byte != -1)
+    {
+        takeChar(byte);
+        byte = hardware.uart57.read();
+    }
+    imp.wakeup(0.0, pollUart);
+
+}
+
+imp.configure("SerialListener", [], []);
+
+server.log("Listening");
+
+hardware.configure(UART_57);    // Using UART on pins 5 and 7
+hardware.uart57.configure(9600, 8, PARITY_NONE, 1, NO_CTSRTS); // 19200 baud worked well, no parity, 1 stop bit, 8 data bits
+
+pollUart();
+
