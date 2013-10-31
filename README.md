@@ -1,31 +1,70 @@
 #Weatherduino#
 
-I've got a simple wireless weather station (the [Maplin N25FR](http://www.maplin.co.uk/professional-wireless-weather-centre-220865) "Professional Weather Station" - it appears to be a generic unit that's also sold as a bunch of other things; the receiver unit identifies it as a "WH1050") that transmits on 433MHz. We're having a hack week at work notionally related to the Internet Of Things, so I've decided to try and reverse engineer it using an off-the-shelf 433MHz receiver and an Arduino.
+I've got a simple wireless weather station (the [Maplin
+N25FR](http://www.maplin.co.uk/professional-wireless-weather-centre-220865)
+"Professional Weather Station" - it appears to be a generic unit that's also
+sold as a bunch of other things; the receiver unit identifies it as a "WH1050")
+that transmits on 433MHz. We're having a hack week at work notionally related
+to the Internet Of Things, so I've decided to try and reverse engineer it using
+an off-the-shelf 433MHz receiver and an Arduino.
 
 ## Notes ##
+
+**Thursday lunchtime**
+
+OK, so my intention was to use the Electric Imp that Dave dropped off on
+tuesday to get this data onto the internet - basically, implement a simple
+serial protocol between the Arduino and the Imp, and have the Imp push data
+up to the cloud when it receives a message from the Arduino.
+
+Unfortunately, the Imp is 3.3v and the Arduino is 5v and I lack a suitable
+level shifter (or the components to build one) so that idea will have to go
+on hold for the moment.
+
+Meanwhile, I've written a more special-purpose Arduino sketch that receives
+data from the weather station, decodes it and writes the temperature and
+humidity data to the serial port.
+
+In the absence of being able to use the Imp for anything, I now need to
+decide what to do next - I have an SD card board, so I could use that to
+log data when not connected to a serial console...
 
 **Thursday morning**
 
 It's amazing what a day off and a bit of googling will do.
 
-So, I took various things apart and didn't get very far, unsurprisingly. Then I went back to staring at the bitstreams - I've had a niggling feeling for the past couple of days that the short packets might be a red herring, so I went back to the logs and webcam grabs of the receiver I had, and tried correlating the two. Suddenly, it all becomes clear.
+So, I took various things apart and didn't get very far, unsurprisingly. Then I
+went back to staring at the bitstreams - I've had a niggling feeling for the
+past couple of days that the short packets might be a red herring, so I went
+back to the logs and webcam grabs of the receiver I had, and tried correlating
+the two. Suddenly, it all becomes clear.
 
-When temperatures change, I observe changes in nibbles 6 and 7 of the long packet as well as changes in the the final two nibbles. The changes in nibbles 6 and 7 seem to be changes by 1 when the temperature changes by 0.1C. *AHA!*
+When temperatures change, I observe changes in nibbles 6 and 7 of the long
+packet as well as changes in the the final two nibbles. The changes in nibbles
+6 and 7 seem to be changes by 1 when the temperature changes by 0.1C. *AHA!*
 
 So my theory is now:
 
  * The last two nibbles are a checksum
  * The short packets are a red herring
 
-Googling around, I found [this page](http://www.susa.net/wordpress/2012/08/raspberry-pi-reading-wh1081-weather-sensors-using-an-rfm01-and-rfm12b/) where someone else has had some success reverse engineering a (different) Maplin weather station and has come to very similar conclusions to me. Their conclusion is that the temperature is 3 nibbles, and to get the temperature, you subtract 400 (0x190) and divide by ten. Well, does that work?
+Googling around, I found [this
+page](http://www.susa.net/wordpress/2012/08/raspberry-pi-reading-wh1081-weather-sensors-using-an-rfm01-and-rfm12b/)
+where someone else has had some success reverse engineering a (different)
+Maplin weather station and has come to very similar conclusions to me. Their
+conclusion is that the temperature is 3 nibbles, and to get the temperature,
+you subtract 400 (0x190) and divide by ten. Well, does that work?
 
 I've got a log with:
 
     1101 0111 1100
 
-for nibbles 5, 6 and 7 (assuming the LSN is the last of the three) and a screenshot showing 24.3C. Given the conversion above, this gives us a temperature of... 305.2C. That's not right.
+for nibbles 5, 6 and 7 (assuming the LSN is the last of the three) and a
+screenshot showing 24.3C. Given the conversion above, this gives us a
+temperature of... 305.2C. That's not right.
 
-Wait. I've previously made assumptions about the mapping of short/long pulses to 1s and 0s. Maybe I got that wrong?
+Wait. I've previously made assumptions about the mapping of short/long pulses
+to 1s and 0s. Maybe I got that wrong?
 
     0010 1000 0011
 
