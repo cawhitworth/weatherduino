@@ -64,7 +64,7 @@ def get_bits(lines):
 
         if level == LineLevel.HIGH:
             expect = LineLevel.LOW
-            if width == 1500:
+            if width == 500:
                 bits.append(1)
             else:
                 bits.append(0)
