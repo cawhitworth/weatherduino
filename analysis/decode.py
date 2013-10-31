@@ -107,14 +107,14 @@ def diff_bits(bits1, bits2, group_by = 32, subgroup_by=4):
         bits2 = bits2[group_by:]
     return retVal
 
-def group_bits(bits, group_by = 16, subgroup_by = 4):
+def group_bits(bits, group_by = 32, subgroup_by = 4):
     retVal = ""
     for bit in range(0, len(bits)):
-        retVal += str(bits[bit]) + " "
+        retVal += str(bits[bit])
         if bit % group_by == group_by-1:
             retVal += "\n"
         elif bit % subgroup_by == subgroup_by-1:
-            retVal += "| "
+            retVal += " | "
 
     if (len(bits)-1) % group_by != group_by-1:
         retVal += "\n"

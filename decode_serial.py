@@ -37,6 +37,8 @@ while True:
             print "LONG PACKET @ %s" % now
             print display
             if lastLong != None:
+                print
+                print "DIFF"
                 print analysis.decode.diff_bits(bits[:48], lastLong[:48])
                 print analysis.decode.diff_bits(bits[48:], lastShort)
 
@@ -49,6 +51,8 @@ while True:
             print "SHORT PACKET @ %s" % now
             print display
             if lastShort != None:
+                print
+                print "DIFF"
                 print analysis.decode.diff_bits(bits, lastShort)
             lastShort = bits[:]
             if cam != None:
