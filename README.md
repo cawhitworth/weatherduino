@@ -1,8 +1,37 @@
 #Weatherduino#
 
-I've got a simple wireless weather station that transmits on 433MHz. We're having a hack week at work notionally related to the Internet Of Things, so I've decided to try and reverse engineer it using an off-the-shelf 433MHz receiver and an Arduino.
+I've got a simple wireless weather station (the [Maplin N25FR](http://www.maplin.co.uk/professional-wireless-weather-centre-220865) "Professional Weather Station" - it appears to be a generic unit that's also sold as a bunch of other things; the receiver unit identifies it as a "WH1050") that transmits on 433MHz. We're having a hack week at work notionally related to the Internet Of Things, so I've decided to try and reverse engineer it using an off-the-shelf 433MHz receiver and an Arduino.
 
 ## Notes ##
+
+**Thursday morning**
+
+It's amazing what a day off and a bit of googling will do.
+
+So, I took various things apart and didn't get very far, unsurprisingly. Then I went back to staring at the bitstreams - I've had a niggling feeling for the past couple of days that the short packets might be a red herring, so I went back to the logs and webcam grabs of the receiver I had, and tried correlating the two. Suddenly, it all becomes clear.
+
+When temperatures change, I observe changes in nibbles 6 and 7 of the long packet as well as changes in the the final two nibbles. The changes in nibbles 6 and 7 seem to be changes by 1 when the temperature changes by 0.1C. *AHA!*
+
+So my theory is now:
+
+ * The last two nibbles are a checksum
+ * The short packets are a red herring
+
+Googling around, I found [this page](http://www.susa.net/wordpress/2012/08/raspberry-pi-reading-wh1081-weather-sensors-using-an-rfm01-and-rfm12b/) where someone else has had some success reverse engineering a (different) Maplin weather station and has come to very similar conclusions to me. Their conclusion is that the temperature is 3 nibbles, and to get the temperature, you subtract 400 (0x190) and divide by ten. Well, does that work?
+
+I've got a log with:
+
+    1101 0111 1100
+
+for nibbles 5, 6 and 7 (assuming the LSN is the last of the three) and a screenshot showing 24.3C. Given the conversion above, this gives us a temperature of... 305.2C. That's not right.
+
+Wait. I've previously made assumptions about the mapping of short/long pulses to 1s and 0s. Maybe I got that wrong?
+
+    0010 1000 0011
+
+...which is 0x283, which is 643. (643 - 400) / 10 = **24.3C**
+
+Woop! Got it. Right, now to do something useful with this knowledge...
 
 **Wednesday**
 
