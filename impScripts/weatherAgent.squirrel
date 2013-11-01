@@ -16,7 +16,15 @@ function requestHandler(request, response) {
     response.send(500, "Internal Server Error: " + ex);
   }
 }
- 
+
+function HttpRequestWrapper (method, url, headers, body) {
+  local request = http.request(method, url, headers, body);
+  local response = request.sendsync();
+  return response;
+}
+
+local submitUrl = "http://bm.parm.net:9999/submit"
+
 // register the HTTP handler
 http.onrequest(requestHandler);
 
@@ -26,10 +34,12 @@ device.on("TICK", function(o) {
 device.on("TEMP", function(t) {
     temperature = t;
     server.log("Temperature from device: " + t);
+    HttpRequestWrapper("POST", submitUrl, {}, "temperature=" + t)
 });
 
 device.on("HUMI", function(h) {
     humidity = h;
     server.log("Humidity from device: " + h);
+    HttpRequestWrapper("POST", submitUrl, {}, "humidity=" + h)
 });
 

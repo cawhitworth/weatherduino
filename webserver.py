@@ -4,6 +4,7 @@ import cgi
 import urlparse
 import sqlite3
 import datetime
+import json
 
 PORT_NUMBER = 9999
 
@@ -27,6 +28,12 @@ LOG_HUMIDITY = '''
 INSERT INTO
 records(record_type, record_value, log_datetime)
 VALUES ( "humidity", ?, ?)
+'''
+
+GET_RECORDS = '''
+SELECT * FROM records
+WHERE record_type=?
+ORDER BY log_datetime DESC LIMIT ? 
 '''
 
 def connect():
@@ -64,12 +71,44 @@ def log_humidity(humid):
     finally:
         conn.close()
 
+def get_records(count):
+    conn = connect()
+    (temperatures, humidities) = (None, None)
+    try:
+        c = conn.cursor()
+        c.execute(GET_RECORDS, [ "temperature", count ])
+        temperatures = c.fetchall()
+        c.execute(GET_RECORDS, [ "humidity", count ])
+        humidities = c.fetchall()
+    finally:
+        conn.close()
+
+    return (temperatures, humidities)
+
+def dt(iso):
+    return datetime.datetime.strptime(iso, "%Y-%m-%dT%H:%M:%S.%f")
+
 class myHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
-            self.send_response(200)
-            self.end_headers()
-            self.wfile.write("OK")
+            print self.path
+            parsed = urlparse.urlparse(self.path)
+            if parsed.path == "/last":
+                (temperatures, humidities) = get_records(int(parsed.query))
+
+                temps = [ { "temperature" : float(r[2]) / 10,
+                            "when" : r[3] } for r in temperatures ]
+
+                humids = [ { "humidity" : int(r[2]),
+                            "when" : r[3] } for r in humidities ]
+
+                records = { "temperatures": temps, "humidities" : humids }
+
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(json.dumps(records))
+            else:
+                self.send_error(404,'File Not Found: %s' % self.path)
 
         except IOError:
             self.send_error(404,'File Not Found: %s' % self.path)
@@ -96,7 +135,7 @@ class myHandler(BaseHTTPRequestHandler):
             self.wfile.write("Not found")
 
 try:
-    init_db(True)
+    init_db(False)
 
     server = HTTPServer(('', PORT_NUMBER), myHandler)
     print 'Started on port ' , PORT_NUMBER
