@@ -107,6 +107,12 @@ class myHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.end_headers()
                 self.wfile.write(json.dumps(records))
+            elif parsed.path == "/graph":
+                self.send_response(200)
+                self.end_headers()
+                with open("prettyGraph.html") as f:
+                    self.wfile.write(f.read())
+
             else:
                 self.send_error(404,'File Not Found: %s' % self.path)
 
