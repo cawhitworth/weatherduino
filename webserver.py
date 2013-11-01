@@ -36,6 +36,13 @@ WHERE record_type=?
 ORDER BY log_datetime DESC LIMIT ? 
 '''
 
+GET_TODAY = '''
+SELECT * FROM records
+WHERE record_type=? 
+AND date(log_datetime,"start of day") == date("now", "start of day")
+ORDER BY log_datetime DESC
+'''
+
 def connect():
     return sqlite3.connect("temperature.db")
 
@@ -85,8 +92,34 @@ def get_records(count):
 
     return (temperatures, humidities)
 
+def get_today():
+    conn = connect()
+    (temperatures, humidities) = (None, None)
+    try:
+        c = conn.cursor()
+        c.execute(GET_TODAY, [ "temperature" ])
+        temperatures = c.fetchall()
+        c.execute(GET_TODAY, [ "humidity" ])
+        humidities = c.fetchall()
+    finally:
+        conn.close()
+
+    return (temperatures, humidities)
+
+
 def dt(iso):
     return datetime.datetime.strptime(iso, "%Y-%m-%dT%H:%M:%S.%f")
+
+def json_for(records):
+    (temperatures, humidities) = records
+    temps = [ { "temperature" : float(r[2]) / 10,
+                "when" : r[3] } for r in temperatures ]
+
+    humids = [ { "humidity" : int(r[2]),
+                "when" : r[3] } for r in humidities ]
+
+    records = { "temperatures": temps, "humidities" : humids }
+    return json.dumps(records)
 
 class myHandler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -94,19 +127,17 @@ class myHandler(BaseHTTPRequestHandler):
             print self.path
             parsed = urlparse.urlparse(self.path)
             if parsed.path == "/last":
-                (temperatures, humidities) = get_records(int(parsed.query))
-
-                temps = [ { "temperature" : float(r[2]) / 10,
-                            "when" : r[3] } for r in temperatures ]
-
-                humids = [ { "humidity" : int(r[2]),
-                            "when" : r[3] } for r in humidities ]
-
-                records = { "temperatures": temps, "humidities" : humids }
-
+                records = get_records(int(parsed.query))
                 self.send_response(200)
                 self.end_headers()
-                self.wfile.write(json.dumps(records))
+                self.wfile.write(json_for( records ))
+
+            elif parsed.path == "/today":
+                records = get_today()
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(json_for( records ))
+
             elif parsed.path == "/graph":
                 self.send_response(200)
                 self.end_headers()

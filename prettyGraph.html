@@ -64,7 +64,7 @@
     $(function() {
 
 
-    d3.json("/last?50", function(d) {
+    d3.json("/today", function(d) {
       debug = d;
 
       temps = d["temperatures"];
@@ -78,10 +78,6 @@
 
       var minDate = d3.min(all_data, function(datum) { return new Date(datum.when); });
       var maxDate = d3.max(all_data, function(datum) { return new Date(datum.when); });
-
-      console.log(minDate);
-      console.log(maxDate);
-
 
       var x = d3.time.scale().domain([minDate, maxDate]).range([0, width]);
       var temp_y = d3.scale.linear().domain([0, 40]).range([height, 0]);
@@ -106,7 +102,6 @@
       var humidLine = d3.svg.line()
         .x(function(d,i) {
             var dt = new Date(d.when);
-            console.log(x(dt));
             return x(dt);
             })
       .y(function(d) {
