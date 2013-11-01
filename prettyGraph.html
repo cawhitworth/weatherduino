@@ -1,6 +1,7 @@
 <html>
   <head>
     <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
     <style>
       /* tell the SVG path to be a thin blue line without any area fill */
       path {
@@ -22,7 +23,8 @@
       }
 
       .x.axis path {
-        display: none;
+        fill:none;
+        stroke: #000;
       }
 
       .y.axis line, .y.axis path {
@@ -34,12 +36,81 @@
   </head>
   <body>
   <script type="text/javascript">
-      var d = null;
-      d3.json("/last?10", function(data) {
-          d = data;
-          alert("Woo!");
-          });
+    var whens = [];
+    var data = [];
+    var debug = null;
+    $(function() {
 
-    </script>
+
+    d3.json("/last?10", function(d) {
+      debug = d;
+
+      temps = d["temperatures"];
+
+      var margin = 40;
+      var width = 800;
+      var height = 525;
+
+      var minDate = d3.min(temps, function(datum) { return new Date(datum.when); });
+      var maxDate = d3.max(temps, function(datum) { return new Date(datum.when); });
+
+
+      var x = d3.time.scale().domain([minDate, maxDate]).range([0, width]);
+      var y = d3.scale.linear().domain([0, 40]).range([height, 0]);
+
+      var graph = d3.select("#graph")
+        .append("svg:svg")
+        .attr("width", width + margin * 2)
+        .attr("height", height + margin * 2)
+        .append("svg:g")
+        .attr("transform", "translate(" + margin + "," + margin + ")");
+
+      var line = d3.svg.line()
+        .x(function(d,i) {
+            var dt = new Date(d.when);
+            console.log(x(dt));
+            return x(dt);
+            })
+        .y(function(d) {
+            return y(d.temperature);
+            });
+
+      var xAxis = d3.svg.axis().scale(x).tickSize(-height);
+
+      graph.append("svg:g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
+
+      graph.append("svg:path").attr("d", line(temps));
+
+      var yAxis = d3.svg.axis().scale(y).ticks(4).orient("left");
+      graph.append("svg:g")
+        .attr("class", "y axis")
+        .attr("transform", "translate(-25,0")
+        .call(yAxis);
+
+      graph.selectAll("text").
+        data(temps).
+        enter().
+        append("svg:text").
+        attr("x", function(datum, index) {
+            var i = new Date(datum.when);
+            return x(i) + (barWidth / 2);
+        }).
+        attr("y", function(datum) { return y(datum.temperature); }).
+        attr("dx", -barWidth/2).
+        attr("dy", "1.2em").
+        attr("text-anchor", "middle").
+        text(function(datum) {
+            return datum.temperature;}).
+        attr("fill", "black");
+
+
+      });
+    });
+  </script>
+  <div id="graph" />
+
   </body>
 </html>
