@@ -6,7 +6,7 @@ import sqlite3
 import datetime
 import json
 
-PORT_NUMBER = 9999
+PORT_NUMBER = 9021
 
 DROP_TABLE = "DROP TABLE IF EXISTS records"
 
@@ -127,10 +127,15 @@ class myHandler(BaseHTTPRequestHandler):
             print self.path
             parsed = urlparse.urlparse(self.path)
             if parsed.path == "/last":
-                records = get_records(int(parsed.query))
-                self.send_response(200)
-                self.end_headers()
-                self.wfile.write(json_for( records ))
+                try:
+                    records = get_records(int(parsed.query))
+                    self.send_response(200)
+                    self.end_headers()
+                    self.wfile.write(json_for( records ))
+                except:
+                    self.send_response(400)
+                    self.end_headers()
+                    self.wfile.write("Invalid query string")
 
             elif parsed.path == "/today":
                 records = get_today()
@@ -151,6 +156,13 @@ class myHandler(BaseHTTPRequestHandler):
             self.send_error(404,'File Not Found: %s' % self.path)
 
     def do_POST(self):
+
+        (host,port) = self.client_address
+        if host != "imp.electricimp.com":
+            self.send_response(403)
+            self.end_headers()
+            self.wfile.write("Permission denied")
+            return
         
         if self.path=="/submit":
             length = int(self.headers['Content-Length'])

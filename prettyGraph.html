@@ -80,7 +80,7 @@
       var maxDate = d3.max(all_data, function(datum) { return new Date(datum.when); });
 
       var x = d3.time.scale().domain([minDate, maxDate]).range([0, width]);
-      var temp_y = d3.scale.linear().domain([0, 40]).range([height, 0]);
+      var temp_y = d3.scale.linear().domain([15, 32]).range([height, 0]);
       var humid_y = d3.scale.linear().domain([0, 100]).range([height, 0]);
 
       var graph = d3.select("#graph")
