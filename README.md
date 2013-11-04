@@ -10,6 +10,59 @@ an off-the-shelf 433MHz receiver and an Arduino.
 
 ## Notes ##
 
+**Friday lunchtime**
+
+I have a web service in Python now: the Imp agent POSTs form data to it:
+
+    /submit
+    temperature=<float>
+    humidity=<int>
+
+The service stores data in a SQLite database (called, at the moment,
+temperature.db). It can be queried on two other GET endpoints:
+
+    /last?<int>    - retrieve the last <int> humidity and temperature records
+    /today         - retrieve all the humidity and temperature records for today
+
+Both return data in JSON format.
+
+There is also a /graph endpoint. This returns an HTML document that uses
+[D3](http://d3js.org) to draw a graph of humidity and temperature data for
+the current day.
+
+![](https://dl.dropboxusercontent.com/u/18971919/waveduino/graph.png)
+
+(the URL the agent posts to is hardcoded. The committed version is not where
+my webservice really lives)
+
+**Friday morning**
+
+The setup seems to be reasonably stable if not terribly power efficient as
+it is. I tried hooking the Imp directly up to the Arduino UART rather than
+using the SoftwareSerial on pins 8/9, but it kind of collapsed in a heap when
+I did that.
+
+So, the final setup is:
+
+    Arduino  : Both USB and 9V cell power connected
+
+    XD-RF-5V : VCC -> Arduino 5V
+               GND -> Arduino GND
+               Data -> Arduino 2 (interrupt 0)
+
+               (debug LED connected in parallel to data pin with 560ohm
+                resister, connected to GND)
+
+    Imp      : Pin 7 (RX) -> Arduino pin 9 via voltage divider (R1 = 560ohm
+               R2 = 1K, grounded to Imp GND)
+               Pin 5 (TX) -> Arduino pin 8 (direct connection)
+               Power from USB
+
+The Arduino software is in the [weatherduino
+folder](https://github.com/cawhitworth/weatherduino/tree/master/weatherduino)
+and the Imp scripts are in the [impScripts
+folder](https://github.com/cawhitworth/weatherduino/tree/master/impScripts).
+
 **Thursday afternoon a bit later still...**
 
 It seems if I continually poll the Imp UART (using imp.onidle rather than
