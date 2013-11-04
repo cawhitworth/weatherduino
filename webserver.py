@@ -1,12 +1,17 @@
 from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
-from os import curdir, sep
 import cgi
 import urlparse
 import sqlite3
 import datetime
 import json
+from optparse import OptionParser
 
-PORT_NUMBER = 9021
+parser = OptionParser()
+parser.add_option("-p","--port", dest="port", action="store", type="int",
+                  help="start server on PORT", metavar="PORT", default=9999)
+(options, args) = parser.parse_args()
+
+PORT_NUMBER = options.port
 
 DROP_TABLE = "DROP TABLE IF EXISTS records"
 
@@ -40,6 +45,12 @@ GET_TODAY = '''
 SELECT * FROM records
 WHERE record_type=? 
 AND date(log_datetime,"start of day") == date("now", "start of day")
+ORDER BY log_datetime DESC
+'''
+
+GET_ALL = '''
+SELECT * FROM records
+WHERE record_type=? 
 ORDER BY log_datetime DESC
 '''
 
@@ -106,6 +117,19 @@ def get_today():
 
     return (temperatures, humidities)
 
+def get_all():
+    conn = connect()
+    (temperatures, humidities) = (None, None)
+    try:
+        c = conn.cursor()
+        c.execute(GET_ALL, [ "temperature" ])
+        temperatures = c.fetchall()
+        c.execute(GET_ALL, [ "humidity" ])
+        humidities = c.fetchall()
+    finally:
+        conn.close()
+
+    return (temperatures, humidities)
 
 def dt(iso):
     return datetime.datetime.strptime(iso, "%Y-%m-%dT%H:%M:%S.%f")
@@ -143,6 +167,12 @@ class myHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json_for( records ))
 
+            elif parsed.path == "/all":
+                records = get_all()
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(json_for( records ))
+
             elif parsed.path == "/graph":
                 self.send_response(200)
                 self.end_headers()
@@ -158,10 +188,11 @@ class myHandler(BaseHTTPRequestHandler):
     def do_POST(self):
 
         (host,port) = self.client_address
-        if host != "imp.electricimp.com":
+        if host != "imp.electricimp.com" and host != "184.169.136.13":
+            print "Denied to", host
             self.send_response(403)
             self.end_headers()
-            self.wfile.write("Permission denied")
+            self.wfile.write("Permission denied: " +host)
             return
         
         if self.path=="/submit":
