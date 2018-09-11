@@ -30,7 +30,7 @@ However, rc_switch is still not giving us anything useful.
 Dumping the pulse-duration data (using the dump_433 sketch - assumes a 433MHz
 receiver on interrupt 0) shows the weather station appears to be transmitting
 PWM encoded data (see dump.dat). The interrupt is triggered on every
-transition, and every other value is ~1000ms, with ~500ms and ~1500ms pulses
+transition, and every other value is ~1000us, with ~500us and ~1500us pulses
 presumably encoding the data:
 
 ![](https://dl.dropboxusercontent.com/u/18971919/waveduino/pulses.png)
@@ -43,7 +43,7 @@ the weather station base unit:
 **Monday afternoon**
 
 Written a python script to decode the dumps making the assumptions above -
-working on 500ms == 0, 1500ms == 1.
+working on 500us == 0, 1500us == 1.
 
 Also assuming little-endian for the moment, but can change that later. Need to
 cross-correlate the dumps with actual data from the weather station next and
